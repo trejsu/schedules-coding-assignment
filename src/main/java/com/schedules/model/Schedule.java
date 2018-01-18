@@ -1,5 +1,6 @@
 package com.schedules.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Value;
 
 import java.util.ArrayList;
@@ -14,28 +15,29 @@ import static java.util.stream.Collectors.toList;
 @Value
 public class Schedule {
 
-    ArrayList<List<JobTimeFrame>> schedule;
+    ArrayList<List<JobTimeFrame>> scheduleTable;
 
+    @JsonIgnore
     Map<Integer, Job> jobs;
 
 
     public int getCost(int time) {
-        return schedule.get(time).stream()
+        return scheduleTable.get(time).stream()
                 .map(getJobFromJobTimeFrame())
                 .mapToInt(Job::getCost)
                 .sum();
     }
 
     public List<Job> getJobs(int time) {
-        return schedule.get(time).stream()
+        return scheduleTable.get(time).stream()
                 .map(getJobFromJobTimeFrame())
                 .collect(toList());
     }
 
     public Optional<ScheduledJob> getNextJob(int time) {
         JobTimeFrame jobTimeFrame = null;
-        while(jobTimeFrame == null && time < schedule.size() - 1) {
-            jobTimeFrame = schedule.get(++time).stream()
+        while(jobTimeFrame == null && time < scheduleTable.size() - 1) {
+            jobTimeFrame = scheduleTable.get(++time).stream()
                     .filter(JobTimeFrame::isStart)
                     .findFirst()
                     .orElse(null);
@@ -45,8 +47,9 @@ public class Schedule {
                 .map(j -> ScheduledJob.fromJob(jobs.get(j.getJobId()), nextJobTime));
     }
 
+    @JsonIgnore
     public int getMaximumCost() {
-        return schedule
+        return scheduleTable
                 .stream()
                 .mapToInt(jobsInTimeFrame -> jobsInTimeFrame
                         .stream()

@@ -3,7 +3,6 @@ package com.schedules.scheduler;
 
 import com.schedules.model.Job;
 import com.schedules.model.Schedule;
-import com.schedules.model.ScheduledJob;
 import org.junit.Test;
 
 import java.util.List;
@@ -36,7 +35,7 @@ public class SchedulerTest {
 
         final Schedule schedule = scheduler.createSchedule(inputJobs);
 
-        assertThat(schedule.getSchedule().get(time), hasSize(3));
+        assertThat(schedule.getScheduleTable().get(time), hasSize(3));
     }
 
     private List<Job> getJobs() {
