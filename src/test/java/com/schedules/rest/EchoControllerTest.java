@@ -1,4 +1,4 @@
-package com.schedules.api;
+package com.schedules.rest;
 
 import lombok.SneakyThrows;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class EchoControllerTest {
         result
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(content().string("hello!"));
+                .andExpect(content().json("\"hello!\""));
 
     }
 }
