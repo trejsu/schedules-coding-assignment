@@ -1,7 +1,6 @@
 package com.schedules.model;
 
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -43,6 +42,16 @@ public class ScheduleTest {
     }
 
     @Test
+    public void shouldReturnZeroCostWhenOutOfBoundsTimeGiven() {
+        final Schedule schedule = getSchedule();
+        final int time = 10;
+
+        final int cost = schedule.getCost(time);
+
+        assertThat(cost, is(0));
+    }
+
+    @Test
     public void shouldListAllJobsRunningInGivenTime() {
         final Schedule schedule = getSchedule();
         final int time = 0;
@@ -57,6 +66,17 @@ public class ScheduleTest {
     public void shouldReturnEmptyListWhenNoJobsAreRunning() {
         final Schedule schedule = getSchedule();
         final int time = 4;
+
+        final List<Job> jobs = schedule.getJobs(time);
+
+        List<Integer> ids = jobs.stream().map(Job::getId).collect(toList());
+        assertThat(ids, empty());
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenOutOfBoundsTimeGiven() {
+        final Schedule schedule = getSchedule();
+        final int time = 10;
 
         final List<Job> jobs = schedule.getJobs(time);
 

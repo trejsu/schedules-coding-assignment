@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Value;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -22,16 +24,18 @@ public class Schedule {
 
 
     public int getCost(int time) {
-        return scheduleTable.get(time).stream()
+        return isTimeValid(time) ? scheduleTable.get(time).stream()
                 .map(getJobFromJobTimeFrame())
                 .mapToInt(Job::getCost)
-                .sum();
+                .sum()
+                : 0;
     }
 
     public List<Job> getJobs(int time) {
-        return scheduleTable.get(time).stream()
+        return isTimeValid(time) ? scheduleTable.get(time).stream()
                 .map(getJobFromJobTimeFrame())
-                .collect(toList());
+                .collect(toList())
+                : emptyList();
     }
 
     public Optional<ScheduledJob> getNextJob(int time) {
@@ -62,6 +66,10 @@ public class Schedule {
 
     private Function<JobTimeFrame, Job> getJobFromJobTimeFrame() {
         return jobTimeFrame -> jobs.get(jobTimeFrame.getJobId());
+    }
+
+    private boolean isTimeValid(int time) {
+        return time >= 0 && time < scheduleTable.size();
     }
 
 }
