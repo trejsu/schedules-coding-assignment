@@ -1,11 +1,13 @@
 package com.schedules.model;
 
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -17,7 +19,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isIn;
 
 public class ScheduleTest {
 
@@ -64,25 +65,25 @@ public class ScheduleTest {
     }
 
     @Test
-    public void shouldReturnNextJobToExecuteAfterGivenTime() {
+    public void shouldReturnNextJobWhenOneIsAvailable() {
         final Schedule schedule = getSchedule();
-        final int time = 3;
+        final int time = 1;
 
-        final ScheduledJob nextJob = schedule.getNextJob(time);
+        final Optional<ScheduledJob> nextJob = schedule.getNextJob(time);
 
-        assertThat(nextJob.getId(), is(3));
-        assertThat(nextJob.getStart(), is(5));
+        assertThat(nextJob.isPresent(), is(true));
+        assertThat(nextJob.get().getId(), is(3));
+        assertThat(nextJob.get().getStart(), is(5));
     }
 
     @Test
-    public void shouldReturnOneOfNextJobsToExecuteAfterGivenTime() {
+    public void shouldReturnEmptyNextJobWhenNoNextJobIsAvailable() {
         final Schedule schedule = getSchedule();
-        final int time = 0;
+        final int time = 8;
 
-        final ScheduledJob nextJob = schedule.getNextJob(time);
+        final Optional<ScheduledJob> nextJob = schedule.getNextJob(time);
 
-        assertThat(nextJob.getId(), isIn(asList(0, 1)));
-        assertThat(nextJob.getStart(), is(1));
+        assertThat(nextJob.isPresent(), is(false));
     }
 
     @Test
@@ -102,17 +103,17 @@ public class ScheduleTest {
                 Job.builder().id(3).period(5).duration(1).cost(4).build()
         );
 
-        ArrayList<List<Integer>> scheduleTimeline = new ArrayList<>();
-        scheduleTimeline.add(asList(0, 3));
-        scheduleTimeline.add(asList(0, 1));
-        scheduleTimeline.add(asList(0, 1));
-        scheduleTimeline.add(singletonList(0));
+        ArrayList<List<JobTimeFrame>> scheduleTimeline = new ArrayList<>();
+        scheduleTimeline.add(asList(new JobTimeFrame(0, true), new JobTimeFrame(3, true)));
+        scheduleTimeline.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, true)));
+        scheduleTimeline.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, false)));
+        scheduleTimeline.add(singletonList(new JobTimeFrame(0, false)));
         scheduleTimeline.add(emptyList());
-        scheduleTimeline.add(singletonList(3));
-        scheduleTimeline.add(singletonList(1));
-        scheduleTimeline.add(singletonList(1));
-        scheduleTimeline.add(singletonList(2));
-        scheduleTimeline.add(singletonList(2));
+        scheduleTimeline.add(singletonList(new JobTimeFrame(3, true)));
+        scheduleTimeline.add(singletonList(new JobTimeFrame(1, true)));
+        scheduleTimeline.add(singletonList(new JobTimeFrame(1, false)));
+        scheduleTimeline.add(singletonList(new JobTimeFrame(2, true)));
+        scheduleTimeline.add(singletonList(new JobTimeFrame(2, false)));
 
         final Map<Integer, Job> jobsWithIds = jobs.stream().collect(Collectors.toMap(Job::getId, identity()));
 

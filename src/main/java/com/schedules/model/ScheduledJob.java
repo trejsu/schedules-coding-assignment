@@ -14,7 +14,7 @@ public class ScheduledJob {
     int cost;
     int start;
 
-    public static ScheduledJob fromJob(Job job, int start) {
+    static ScheduledJob fromJob(Job job, int start) {
         return builder()
                 .id(job.getId())
                 .period(job.getPeriod())
