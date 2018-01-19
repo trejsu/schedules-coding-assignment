@@ -129,3 +129,59 @@ for it. Application will return `JSON` representation of calculated schedule in 
 Every element of `scheduleTable` represents point in time consisting of jobs that are 
 running in this time frame. 
 
+API also provides getting some info about created schedule:
+* instant cost of all the running jobs in time `t` 
+    * `GET` `schedule/{id}/cost?time={time}`
+    * example response:
+    ```json
+    7
+    ```
+* list of all the running jobs at time `t`
+    * `GET` `schedule/{id}/list?time={time}`
+    * example response:
+    ```json
+    [
+        {
+            "id": 0,
+            "period": 10,
+            "duration": 4,
+            "cost": 2
+        },
+        {
+            "id": 1,
+            "period": 5,
+            "duration": 2,
+            "cost": 3
+        },
+        {
+            "id": 2,
+            "period": 10,
+            "duration": 2,
+            "cost": 2
+        },
+        {
+            "id": 3,
+            "period": 5,
+            "duration": 1,
+            "cost": 4
+        }
+    ]
+    ```
+* next job that will be run and when after time `t`
+    * `GET` `schedule/{id}/next?time={time}`
+    * example response:
+    ```json
+    {
+        "id": 1,
+        "period": 5,
+        "duration": 2,
+        "cost": 3,
+        "start": 5
+    }
+    ```
+* maximum instant cost of the whole schedule
+    * `GET` `schedule/{id}/max`
+    * example response:
+    ```json
+    11
+    ```

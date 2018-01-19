@@ -5,6 +5,7 @@ import com.schedules.exception.InputNotFoundException;
 import com.schedules.exception.ScheduleNotFoundException;
 import com.schedules.model.Job;
 import com.schedules.model.Schedule;
+import com.schedules.model.ScheduledJob;
 import com.schedules.scheduler.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
@@ -58,6 +60,50 @@ public class ScheduleController {
         try {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             return ResponseEntity.ok(schedule);
+        } catch (ScheduleNotFoundException e) {
+            return e.getResponseEntity();
+        }
+    }
+
+    @GetMapping(value = "/{schedule_id}/cost", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getCost(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
+        try {
+            final Schedule schedule = scheduleRegistry.get(scheduleId);
+            final int cost = schedule.getCost(time);
+            return ResponseEntity.ok(cost);
+        } catch (ScheduleNotFoundException e) {
+            return e.getResponseEntity();
+        }
+    }
+
+    @GetMapping(value = "/{schedule_id}/list", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getJobs(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
+        try {
+            final Schedule schedule = scheduleRegistry.get(scheduleId);
+            final List<Job> jobs = schedule.getJobs(time);
+            return ResponseEntity.ok(jobs);
+        } catch (ScheduleNotFoundException e) {
+            return e.getResponseEntity();
+        }
+    }
+
+    @GetMapping(value = "/{schedule_id}/next", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getNextJob(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
+        try {
+            final Schedule schedule = scheduleRegistry.get(scheduleId);
+            final ScheduledJob nextJob = schedule.getNextJob(time).orElse(null);
+            return ResponseEntity.ok(nextJob);
+        } catch (ScheduleNotFoundException e) {
+            return e.getResponseEntity();
+        }
+    }
+
+    @GetMapping(value = "/{schedule_id}/max", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getMaxCost(@PathVariable("schedule_id") Integer scheduleId) {
+        try {
+            final Schedule schedule = scheduleRegistry.get(scheduleId);
+            final int maximumCost = schedule.getMaximumCost();
+            return ResponseEntity.ok(maximumCost);
         } catch (ScheduleNotFoundException e) {
             return e.getResponseEntity();
         }
