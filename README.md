@@ -60,65 +60,29 @@ for it. Application will return `JSON` representation of calculated schedule in 
 {
     "scheduleTable": [
         [
-            {
-                "jobId": 0,
-                "start": true
-            },
-            {
-                "jobId": 1,
-                "start": true
-            },
-            {
-                "jobId": 2,
-                "start": true
-            },
-            {
-                "jobId": 3,
-                "start": true
-            }
+            0,
+            1,
+            2,
+            3
         ],
         [
-            {
-                "jobId": 0,
-                "start": false
-            },
-            {
-                "jobId": 1,
-                "start": false
-            },
-            {
-                "jobId": 2,
-                "start": false
-            }
+            0,
+            1,
+            2
         ],
         [
-            {
-                "jobId": 0,
-                "start": false
-            }
+            0
         ],
         [
-            {
-                "jobId": 0,
-                "start": false
-            }
+            0
         ],
         [],
         [
-            {
-                "jobId": 1,
-                "start": true
-            },
-            {
-                "jobId": 3,
-                "start": true
-            }
+            1,
+            3
         ],
         [
-            {
-                "jobId": 1,
-                "start": false
-            }
+            1
         ],
         [],
         [],
@@ -126,7 +90,7 @@ for it. Application will return `JSON` representation of calculated schedule in 
     ]
 }
 ```
-Every element of `scheduleTable` represents point in time consisting of jobs that are 
+Every element of `scheduleTable` represents point in time consisting of jobs (referenced by `id`) that are 
 running in this time frame. 
 
 API also provides getting some info about created schedule:
