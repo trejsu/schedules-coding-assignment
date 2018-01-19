@@ -10,6 +10,7 @@ import com.schedules.model.ScheduledJob;
 import com.schedules.scheduler.Scheduler;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,15 +31,16 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 @RestController
 @RequestMapping("/schedule")
+@NoArgsConstructor
 public class ScheduleController {
 
     private static final String CSV = "text/csv;charset=UTF-8";
 
-    private final Scheduler scheduler;
+    private Scheduler scheduler;
 
-    private final CsvLoader csvLoader;
+    private CsvLoader csvLoader;
 
-    private final ScheduleRegistry scheduleRegistry;
+    private ScheduleRegistry scheduleRegistry;
 
     @Autowired
     public ScheduleController(Scheduler scheduler, CsvLoader csvLoader, ScheduleRegistry scheduleRegistry) {

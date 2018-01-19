@@ -123,21 +123,21 @@ public class ScheduleTest {
                 Job.builder().id(3).period(5).duration(1).cost(4).build()
         );
 
-        ArrayList<List<JobTimeFrame>> scheduleTimeline = new ArrayList<>();
-        scheduleTimeline.add(asList(new JobTimeFrame(0, true), new JobTimeFrame(3, true)));
-        scheduleTimeline.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, true)));
-        scheduleTimeline.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, false)));
-        scheduleTimeline.add(singletonList(new JobTimeFrame(0, false)));
-        scheduleTimeline.add(emptyList());
-        scheduleTimeline.add(singletonList(new JobTimeFrame(3, true)));
-        scheduleTimeline.add(singletonList(new JobTimeFrame(1, true)));
-        scheduleTimeline.add(singletonList(new JobTimeFrame(1, false)));
-        scheduleTimeline.add(singletonList(new JobTimeFrame(2, true)));
-        scheduleTimeline.add(singletonList(new JobTimeFrame(2, false)));
+        ArrayList<List<JobTimeFrame>> scheduleTable = new ArrayList<>();
+        scheduleTable.add(asList(new JobTimeFrame(0, true), new JobTimeFrame(3, true)));
+        scheduleTable.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, true)));
+        scheduleTable.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, false)));
+        scheduleTable.add(singletonList(new JobTimeFrame(0, false)));
+        scheduleTable.add(emptyList());
+        scheduleTable.add(singletonList(new JobTimeFrame(3, true)));
+        scheduleTable.add(singletonList(new JobTimeFrame(1, true)));
+        scheduleTable.add(singletonList(new JobTimeFrame(1, false)));
+        scheduleTable.add(singletonList(new JobTimeFrame(2, true)));
+        scheduleTable.add(singletonList(new JobTimeFrame(2, false)));
 
         final Map<Integer, Job> jobsWithIds = jobs.stream().collect(Collectors.toMap(Job::getId, identity()));
 
-        return new Schedule(scheduleTimeline, jobsWithIds);
+        return new Schedule(scheduleTable, jobsWithIds);
     }
 }
 

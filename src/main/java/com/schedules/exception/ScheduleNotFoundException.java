@@ -2,6 +2,8 @@ package com.schedules.exception;
 
 import org.springframework.http.ResponseEntity;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 
 public class ScheduleNotFoundException extends RuntimeException {
 
@@ -10,6 +12,6 @@ public class ScheduleNotFoundException extends RuntimeException {
     }
 
     public ResponseEntity<String> getResponseEntity() {
-        return ResponseEntity.badRequest().body(getMessage());
+        return ResponseEntity.status(NOT_FOUND).body(getMessage());
     }
 }
