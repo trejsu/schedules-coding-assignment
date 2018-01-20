@@ -152,3 +152,10 @@ API also provides getting some info about created schedule:
     ```json
     11
     ```
+    
+## Algorithm
+
+To minimize the maximum instant cost and idle time of the system, I implemented a solution based on
+the sum of subset problem. I am processing jobs starting from the most expensive one and choosing
+the right place by dynamically finding the period of time equal to the job's duration with 
+a minimum cost sum of all already running jobs in that interval. 
