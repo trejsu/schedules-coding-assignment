@@ -23,6 +23,6 @@ public class ScheduleRegistry {
 
     public Schedule get(Integer scheduleId) {
         final Schedule schedule = schedules.get(scheduleId);
-        return ofNullable(schedule).orElseThrow(() -> new ScheduleNotFoundException("{\"errorMessage\":\"Requested schedule does not exist\"}"));
+        return ofNullable(schedule).orElseThrow(() -> new ScheduleNotFoundException("Requested schedule does not exist"));
     }
 }

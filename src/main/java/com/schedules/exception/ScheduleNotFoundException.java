@@ -12,6 +12,6 @@ public class ScheduleNotFoundException extends RuntimeException {
     }
 
     public ResponseEntity<String> getResponseEntity() {
-        return ResponseEntity.status(NOT_FOUND).body(getMessage());
+        return ResponseEntity.status(NOT_FOUND).body("{\"errorMessage\":\"" + getMessage() + "\"}");
     }
 }

@@ -1,6 +1,7 @@
 package com.schedules.rest;
 
 import com.schedules.csv.CsvParser;
+import com.schedules.exception.CsvMalformedException;
 import com.schedules.exception.ScheduleNotFoundException;
 import com.schedules.model.Job;
 import com.schedules.model.JobTimeFrame;
@@ -48,11 +49,15 @@ public class ScheduleController {
 
     @PostMapping(consumes = TEXT_PLAIN_VALUE)
     public ResponseEntity<?> createScheduleFromCsv(@RequestBody String inputJobsString) {
-        final List<Job> inputJobs = csvParser.parseString(inputJobsString);
-        final Schedule schedule = scheduler.createSchedule(inputJobs);
-        final Integer id = scheduleRegistry.add(schedule);
-        final String location = "/schedules/schedule/" + id;
-        return ResponseEntity.created(URI.create(location)).build();
+        try {
+            final List<Job> inputJobs = csvParser.parseString(inputJobsString);
+            final Schedule schedule = scheduler.createSchedule(inputJobs);
+            final Integer id = scheduleRegistry.add(schedule);
+            final String location = "/schedules/schedule/" + id;
+            return ResponseEntity.created(URI.create(location)).build();
+        } catch(CsvMalformedException e) {
+            return e.getResponseEntity();
+        }
     }
 
     @GetMapping(value = "/{schedule_id}", produces = APPLICATION_JSON_VALUE)

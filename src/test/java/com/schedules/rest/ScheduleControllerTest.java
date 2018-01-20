@@ -2,6 +2,7 @@ package com.schedules.rest;
 
 
 import com.schedules.csv.CsvParser;
+import com.schedules.exception.CsvMalformedException;
 import com.schedules.exception.ScheduleNotFoundException;
 import com.schedules.model.Job;
 import com.schedules.model.JobTimeFrame;
@@ -81,6 +82,23 @@ public class ScheduleControllerTest {
 
     @Test
     @SneakyThrows
+    public void shouldReturnBadRequestWhenCsvParserThrowsCsvMalformedException() {
+        final String csv = getMalformedCsv();
+        final String errorMessage = "error";
+        when(csvParser.parseString(csv)).thenThrow(new CsvMalformedException(errorMessage));
+
+        final ResultActions result = this.mockMvc.perform(
+                post(SCHEDULE_URL)
+                        .contentType(TEXT_PLAIN_VALUE)
+                        .content(csv));
+
+        result
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json("{\"errorMessage\":\"" + errorMessage + "\"}"));
+    }
+
+    @Test
+    @SneakyThrows
     public void shouldReturnRequestedSchedule() {
         final Schedule schedule = getSchedule(getJobs());
         final Integer id = 0;
@@ -109,7 +127,7 @@ public class ScheduleControllerTest {
     @SneakyThrows
     public void shouldReturnNotFoundWhenScheduleDoesNotExists() {
         final Integer id = 0;
-        final String errorMessage = "{\"errorMessage\":\"error\"}";
+        final String errorMessage = "error";
         when(scheduleRegistry.get(id))
                 .thenThrow(new ScheduleNotFoundException(errorMessage));
 
@@ -119,7 +137,7 @@ public class ScheduleControllerTest {
 
         result
                 .andExpect(status().isNotFound())
-                .andExpect(content().json(errorMessage));
+                .andExpect(content().json("{\"errorMessage\":\"" + errorMessage + "\"}"));
     }
 
     @Test
@@ -226,5 +244,12 @@ public class ScheduleControllerTest {
                "1, 5, 2, 3\n" +
                "2, 10, 2, 2\n" +
                "3, 5, 1, 4";
+    }
+
+    private String getMalformedCsv() {
+        return "0, ten, 4\n" +
+                "1, 5, 2, 3\n" +
+                "2, 10, 2, 2\n" +
+                "3, 5, 1, 4";
     }
 }
