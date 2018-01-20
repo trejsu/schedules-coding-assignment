@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
-public class CsvMalformedException extends RuntimeException {
+public class CsvMalformedException extends ErrorResponseException {
 
     public CsvMalformedException(String message) {
         super(message);

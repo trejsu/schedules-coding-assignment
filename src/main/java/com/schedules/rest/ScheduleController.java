@@ -1,8 +1,7 @@
 package com.schedules.rest;
 
 import com.schedules.csv.CsvParser;
-import com.schedules.exception.CsvMalformedException;
-import com.schedules.exception.ScheduleNotFoundException;
+import com.schedules.exception.ErrorResponseException;
 import com.schedules.model.Job;
 import com.schedules.model.JobTimeFrame;
 import com.schedules.model.Schedule;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -49,67 +49,63 @@ public class ScheduleController {
 
     @PostMapping(consumes = TEXT_PLAIN_VALUE)
     public ResponseEntity<?> createScheduleFromCsv(@RequestBody String inputJobsString) {
-        try {
+        return getResponseWithErrorHandling(() -> {
             final List<Job> inputJobs = csvParser.parseString(inputJobsString);
             final Schedule schedule = scheduler.createSchedule(inputJobs);
             final Integer id = scheduleRegistry.add(schedule);
             final String location = "/schedules/schedule/" + id;
             return ResponseEntity.created(URI.create(location)).build();
-        } catch(CsvMalformedException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{schedule_id}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getSchedule(@PathVariable("schedule_id") Integer scheduleId) {
-        try {
+        return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             return ResponseEntity.ok(ScheduleOutputDto.fromSchedule(schedule));
-        } catch (ScheduleNotFoundException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{schedule_id}/cost", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCost(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
-        try {
+        return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final int cost = schedule.getCost(time);
             return ResponseEntity.ok(cost);
-        } catch (ScheduleNotFoundException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{schedule_id}/list", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getJobs(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
-        try {
+        return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final List<Job> jobs = schedule.getJobs(time);
             return ResponseEntity.ok(jobs);
-        } catch (ScheduleNotFoundException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{schedule_id}/next", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getNextJob(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
-        try {
+        return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final ScheduledJob nextJob = schedule.getNextJob(time).orElse(null);
             return ResponseEntity.ok(nextJob);
-        } catch (ScheduleNotFoundException e) {
-            return e.getResponseEntity();
-        }
+        });
     }
 
     @GetMapping(value = "/{schedule_id}/max", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getMaxCost(@PathVariable("schedule_id") Integer scheduleId) {
-        try {
+        return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final int maximumCost = schedule.getMaximumCost();
             return ResponseEntity.ok(maximumCost);
-        } catch (ScheduleNotFoundException e) {
+        });
+    }
+
+    private ResponseEntity<?> getResponseWithErrorHandling(Supplier<ResponseEntity<?>> getResponse) {
+        try {
+            return getResponse.get();
+        } catch (ErrorResponseException e) {
             return e.getResponseEntity();
         }
     }
