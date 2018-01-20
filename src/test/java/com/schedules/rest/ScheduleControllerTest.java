@@ -1,8 +1,7 @@
 package com.schedules.rest;
 
 
-import com.schedules.csv.CsvLoader;
-import com.schedules.exception.InputNotFoundException;
+import com.schedules.csv.CsvParser;
 import com.schedules.exception.ScheduleNotFoundException;
 import com.schedules.model.Job;
 import com.schedules.model.JobTimeFrame;
@@ -54,7 +53,7 @@ public class ScheduleControllerTest {
     private Scheduler scheduler;
 
     @MockBean
-    private CsvLoader csvLoader;
+    private CsvParser csvParser;
 
     @MockBean
     private ScheduleRegistry scheduleRegistry;
@@ -62,40 +61,22 @@ public class ScheduleControllerTest {
     @Test
     @SneakyThrows
     public void shouldReturnLocationOfCreatedSchedule() {
-        final String filename = "input.csv";
+        final String csv = getCsv();
         final List<Job> jobs = getJobs();
         final Schedule schedule = getSchedule(jobs);
         final Integer id = 0;
-        when(csvLoader.loadAsJobs(filename)).thenReturn(jobs);
+        when(csvParser.parseString(csv)).thenReturn(jobs);
         when(scheduler.createSchedule(jobs)).thenReturn(schedule);
         when(scheduleRegistry.add(schedule)).thenReturn(id);
 
         final ResultActions result = this.mockMvc.perform(
                 post(SCHEDULE_URL)
                         .contentType(TEXT_PLAIN_VALUE)
-                        .content(filename));
+                        .content(csv));
 
         result
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", equalTo("/schedules" + SCHEDULE_URL + "/" + id)));
-    }
-
-    @Test
-    @SneakyThrows
-    public void shouldReturnBadRequestWhenInputDoesNotExists() {
-        final String filename = "input.csv";
-        final String errorMessage = "{\"errorMessage\":\"error\"}";
-        when(csvLoader.loadAsJobs(filename))
-                .thenThrow(new InputNotFoundException(errorMessage));
-
-        final ResultActions result = this.mockMvc.perform(
-                post(SCHEDULE_URL)
-                        .contentType(TEXT_PLAIN_VALUE)
-                        .content(filename));
-
-        result
-                .andExpect(status().isBadRequest())
-                .andExpect(content().json(errorMessage));
     }
 
     @Test
@@ -238,5 +219,12 @@ public class ScheduleControllerTest {
         final Map<Integer, Job> jobsWithIds = jobs.stream().collect(Collectors.toMap(Job::getId, identity()));
 
         return new Schedule(scheduleTable, jobsWithIds);
+    }
+
+    private String getCsv() {
+        return "0, 10, 4, 2\n" +
+               "1, 5, 2, 3\n" +
+               "2, 10, 2, 2\n" +
+               "3, 5, 1, 4";
     }
 }

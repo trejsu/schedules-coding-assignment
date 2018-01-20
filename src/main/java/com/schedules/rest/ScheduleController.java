@@ -1,7 +1,6 @@
 package com.schedules.rest;
 
-import com.schedules.csv.CsvLoader;
-import com.schedules.exception.InputNotFoundException;
+import com.schedules.csv.CsvParser;
 import com.schedules.exception.ScheduleNotFoundException;
 import com.schedules.model.Job;
 import com.schedules.model.JobTimeFrame;
@@ -34,32 +33,26 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 @NoArgsConstructor
 public class ScheduleController {
 
-    private static final String CSV = "text/csv;charset=UTF-8";
-
     private Scheduler scheduler;
 
-    private CsvLoader csvLoader;
+    private CsvParser csvParser;
 
     private ScheduleRegistry scheduleRegistry;
 
     @Autowired
-    public ScheduleController(Scheduler scheduler, CsvLoader csvLoader, ScheduleRegistry scheduleRegistry) {
+    public ScheduleController(Scheduler scheduler, CsvParser csvParser, ScheduleRegistry scheduleRegistry) {
         this.scheduler = scheduler;
-        this.csvLoader = csvLoader;
+        this.csvParser = csvParser;
         this.scheduleRegistry = scheduleRegistry;
     }
 
     @PostMapping(consumes = TEXT_PLAIN_VALUE)
-    public ResponseEntity<?> createSchedule(@RequestBody String inputPath) {
-        try {
-            final List<Job> inputJobs = csvLoader.loadAsJobs(inputPath);
-            final Schedule schedule = scheduler.createSchedule(inputJobs);
-            final Integer id = scheduleRegistry.add(schedule);
-            final String location = "/schedules/schedule/" + id;
-            return ResponseEntity.created(URI.create(location)).build();
-        } catch (InputNotFoundException e) {
-            return e.getResponseEntity();
-        }
+    public ResponseEntity<?> createScheduleFromCsv(@RequestBody String inputJobsString) {
+        final List<Job> inputJobs = csvParser.parseString(inputJobsString);
+        final Schedule schedule = scheduler.createSchedule(inputJobs);
+        final Integer id = scheduleRegistry.add(schedule);
+        final String location = "/schedules/schedule/" + id;
+        return ResponseEntity.created(URI.create(location)).build();
     }
 
     @GetMapping(value = "/{schedule_id}", produces = APPLICATION_JSON_VALUE)
