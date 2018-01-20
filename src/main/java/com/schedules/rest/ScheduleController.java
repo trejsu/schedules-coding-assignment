@@ -51,6 +51,7 @@ public class ScheduleController {
     public ResponseEntity<?> createScheduleFromCsv(@RequestBody String inputJobsString) {
         return getResponseWithErrorHandling(() -> {
             final List<Job> inputJobs = csvParser.parseString(inputJobsString);
+            inputJobs.forEach(Job::validate);
             final Schedule schedule = scheduler.createSchedule(inputJobs);
             final Integer id = scheduleRegistry.add(schedule);
             final String location = "/schedules/schedule/" + id;

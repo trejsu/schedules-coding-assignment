@@ -2,6 +2,7 @@ package com.schedules.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.schedules.exception.JobValidationException;
 import lombok.Builder;
 import lombok.Value;
 
@@ -23,6 +24,23 @@ public class Job {
         this.period = period;
         this.duration = duration;
         this.cost = cost;
+    }
+
+    public void validate() {
+        durationShorterOrEqualPeriod();
+        periodDurationAndCostPositive();
+    }
+
+    private void durationShorterOrEqualPeriod() {
+        if (duration > period) {
+            throw new JobValidationException("Duration of the job cannot be greater than its period.");
+        }
+    }
+
+    private void periodDurationAndCostPositive() {
+        if (period <= 0 || duration <= 0 || cost <= 0) {
+            throw new JobValidationException("Period, duration and cost has to be greater than 0.");
+        }
     }
 
 }
