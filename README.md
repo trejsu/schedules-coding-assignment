@@ -36,23 +36,26 @@ mvn test
 ## Features
 
 The main feature of the application is creating schedules based on `csv` input with jobs information.
-For now the app does not support passing `csv` data through REST API. It has to be done 
-with `POST` request on `/schedules/schedule` with `path` string as a body. `path` represent 
-name of the file placed in `resources/data` directory of the project. For example, given 
-the file `resources/data/input1.csv` with the content
+The app supports passing `csv` data through REST API. It has to be done with `POST` request on 
+`/schedules/schedule` 
+
+For example, making a call to `/schedules/schedule` with body
 ```
 0, 10, 4, 2
 1, 5, 2, 3
 2, 10, 2, 2
 3, 5, 1, 4
 ```
-where successive columns of the `csv` file represents `id`, `period`, `duration` and `cost`
-and making a call to `/schedules/schedule` with body
-```
-input1.csv
-```
+where successive columns of the `csv` file represents `id`, `period`, `duration` and `cost`,
 the app will respond with `201` code with URL to the created schedule in `Location` header.
 For example: `/schedules/schedule/1`.
+
+---
+**NOTE**
+
+`/schedules/schedule` endpoint accepts `text/plain` content type.
+
+---
 
 In the next step you could use the returned location of the resource to make a `GET` call 
 for it. Application will return `JSON` representation of calculated schedule in the following form:
