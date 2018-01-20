@@ -68,7 +68,8 @@ public class ScheduleController {
     }
 
     @GetMapping(value = "/{schedule_id}/cost", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getCost(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
+    public ResponseEntity<?> getCost(@PathVariable("schedule_id") Integer scheduleId,
+                                     @RequestParam(name = "time") Integer time) {
         return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final int cost = schedule.getCost(time);
@@ -77,7 +78,8 @@ public class ScheduleController {
     }
 
     @GetMapping(value = "/{schedule_id}/list", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getJobs(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
+    public ResponseEntity<?> getJobs(@PathVariable("schedule_id") Integer scheduleId,
+                                     @RequestParam(name = "time") Integer time) {
         return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final List<Job> jobs = schedule.getJobs(time);
@@ -86,7 +88,8 @@ public class ScheduleController {
     }
 
     @GetMapping(value = "/{schedule_id}/next", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getNextJob(@PathVariable("schedule_id") Integer scheduleId, @RequestParam(name = "time") Integer time) {
+    public ResponseEntity<?> getNextJob(@PathVariable("schedule_id") Integer scheduleId,
+                                        @RequestParam(name = "time") Integer time) {
         return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final ScheduledJob nextJob = schedule.getNextJob(time).orElse(null);

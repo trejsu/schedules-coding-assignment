@@ -137,7 +137,9 @@ public class ScheduleTest {
 
         final Map<Integer, Job> jobsWithIds = jobs.stream().collect(Collectors.toMap(Job::getId, identity()));
 
-        return new Schedule(scheduleTable, jobsWithIds);
+        final int [] costs = {6, 5, 5, 2, 0, 4, 3, 3, 2, 2};
+
+        return new Schedule(scheduleTable, jobsWithIds, costs);
     }
 }
 
