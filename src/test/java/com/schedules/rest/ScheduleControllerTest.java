@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -24,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.schedules.model.JobTimeFrame.next;
+import static com.schedules.model.JobTimeFrame.start;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -222,13 +223,13 @@ public class ScheduleControllerTest {
 
     private Schedule getSchedule(List<Job> jobs) {
         ArrayList<List<JobTimeFrame>> scheduleTable = new ArrayList<>();
-        scheduleTable.add(asList(new JobTimeFrame(0, true), new JobTimeFrame(1, true), new JobTimeFrame(2, true), new JobTimeFrame(3, true)));
-        scheduleTable.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, false), new JobTimeFrame(2, false)));
-        scheduleTable.add(singletonList(new JobTimeFrame(0, false)));
-        scheduleTable.add(singletonList(new JobTimeFrame(0, false)));
+        scheduleTable.add(asList(start(0), start(1), start(2), start(3)));
+        scheduleTable.add(asList(next(0), next(1), next(2)));
+        scheduleTable.add(singletonList(next(0)));
+        scheduleTable.add(singletonList(next(0)));
         scheduleTable.add(emptyList());
-        scheduleTable.add(asList(new JobTimeFrame(1, true), new JobTimeFrame(3, true)));
-        scheduleTable.add(singletonList(new JobTimeFrame(1, false)));
+        scheduleTable.add(asList(start(1), start(3)));
+        scheduleTable.add(singletonList(next(1)));
         scheduleTable.add(emptyList());
         scheduleTable.add(emptyList());
         scheduleTable.add(emptyList());
