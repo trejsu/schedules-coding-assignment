@@ -40,7 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
-@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @WebMvcTest(ScheduleController.class)
 public class ScheduleControllerTest {
@@ -236,7 +235,9 @@ public class ScheduleControllerTest {
 
         final Map<Integer, Job> jobsWithIds = jobs.stream().collect(Collectors.toMap(Job::getId, identity()));
 
-        return new Schedule(scheduleTable, jobsWithIds);
+        final int [] costs = {11, 7, 2, 2, 0, 7, 3, 0, 0, 0};
+
+        return new Schedule(scheduleTable, jobsWithIds, costs);
     }
 
     private String getCsv() {
