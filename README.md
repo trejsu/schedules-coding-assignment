@@ -184,22 +184,22 @@ running jobs in that moment.
 `job 3` has period equal to `4` so it has to be placed twice in our schedule (`occurrences = 2`). Exactly once in interval
 `[0, 3]` and exactly once in interval `[4, 7]`. Looking for the starting index in `cost array` 
 with the minimum sum of subset of the length `2` (`2` is our jobs duration) we have to perform
-this task `occurrences` times - once for the `costs[0:3]` and once for the `costs[4,7]`. 
-Algorithm always return the first index with the minimum sum so we will be placing `job 3` starting
-from `0` and then from `4` updating costs. Now `cost array = {4, 4, 0, 0, 4, 4, 0, 0, 0, 0}`
+this task `occurrences` times - once for the `costs[0:3]` and once for the `costs[4:7]`. 
+Algorithm always returns the first index with the minimum sum so we will be placing `job 3` starting
+from `0` and then from `4`. Now `cost array = {4, 4, 0, 0, 4, 4, 0, 0, 0, 0}`
 
 #### Job 2
 
-Repeating the above steps for the `job 2` algorithm will find the optimal place for it 
+Repeating the above steps for the `job 2`, algorithm will find the optimal place for it 
 under the indexes `2` and `6`. For the first occurrence `{4, 4, 0, 0, 4}` part of the `costs array`
-was taken into account so its trivial to see that index `2` is the starting position of minimal
-sum of `length 2` subset - it is equal to `0`. For the second occurrence `{4, 0, 0, 0, 0}` is 
+was taken into account, so its trivial to see that index `2` is the starting position of minimal
+sum of `length 2` subset - it is equal to `0`. For the second occurrence, `{4, 0, 0, 0, 0}` is 
 processed so algorithm returns index `1` which after adding `offset 5` - jobs period - results in
 position `6` in the schedule. `cost array = {4, 4, 3, 3, 4, 4, 3, 3, 0, 0}`.
 
 #### Job 1
 
-In the same way as previous, `job 1` is placed under `6` wat results with 
+In the same way as previous, `job 1` is placed under `6` what results with 
 `cost array = {4, 4, 3, 3, 4, 4, 5, 5, 2, 2}.`
 
 #### Job 0
@@ -210,7 +210,7 @@ At the very end `job 0` is placed under `2` (index `2` has the lowest sum in `{4
 
 #### Result
 
-The final result of `Scheduler::createSchedule` is following schedule:
+The final result of `Scheduler::createSchedule` is the following schedule:
 
 `[[3],[3],[0,2],[0,2],[3],[3],[1,2],[1,2],[0,1],[1]]`
 
