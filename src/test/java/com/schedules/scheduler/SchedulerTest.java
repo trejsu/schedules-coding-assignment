@@ -9,8 +9,10 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -19,6 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.Assert.assertFalse;
 
 public class SchedulerTest {
 
@@ -51,9 +54,24 @@ public class SchedulerTest {
 
         final int[] costs = schedule.getCosts();
         for (int i = 0; i < costs.length; i++) {
-            final int costsFromScheduleTable = mapToCost(schedule.getScheduleTable(), i, schedule.getJobs());
-            assertThat(costsFromScheduleTable, equalTo(costs[i]));
+            final int costFromScheduleTable = mapToCost(schedule.getScheduleTable(), i, schedule.getJobs());
+            assertThat(costFromScheduleTable, equalTo(costs[i]));
         }
+    }
+
+    @Test
+    public void shouldCreateScheduleWithNoOverlappingJobs() {
+        final Scheduler scheduler = new Scheduler();
+        final List<Job> inputJobs = getSecondExampleJobs();
+
+        final Schedule schedule = scheduler.createSchedule(inputJobs);
+
+        schedule.getScheduleTable().forEach(scheduleTimeFrame ->
+                        assertFalse(hasDuplicates(scheduleTimeFrame
+                                                  .stream()
+                                                  .map(JobTimeFrame::getJobId)
+                                                  .collect(toList()))));
+
     }
 
     @Test
@@ -176,5 +194,16 @@ public class SchedulerTest {
 
     private int mapToCost(ArrayList<List<JobTimeFrame>> scheduleTable, int index, Map<Integer, Job> jobs) {
         return mapToIds(scheduleTable, index).stream().mapToInt(id -> jobs.get(id).getCost()).sum();
+    }
+
+    private boolean hasDuplicates(List<Integer> scheduleTimeFrame) {
+        Set<Integer> uniques = new HashSet<>();
+
+        for(Integer id : scheduleTimeFrame) {
+            if (!uniques.add(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
