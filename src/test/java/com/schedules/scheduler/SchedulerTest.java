@@ -43,6 +43,20 @@ public class SchedulerTest {
     }
 
     @Test
+    public void shouldCreateScheduleWithConsistentCostInfo() {
+        final Scheduler scheduler = new Scheduler();
+        final List<Job> inputJobs = getFirstExampleJobs();
+
+        final Schedule schedule = scheduler.createSchedule(inputJobs);
+
+        final int[] costs = schedule.getCosts();
+        for (int i = 0; i < costs.length; i++) {
+            final int costsFromScheduleTable = mapToCost(schedule.getScheduleTable(), i, schedule.getJobs());
+            assertThat(costsFromScheduleTable, equalTo(costs[i]));
+        }
+    }
+
+    @Test
     public void shouldProperlyFindMaxPeriod() {
         final Scheduler scheduler = new Scheduler();
         final List<Job> jobs = getSecondExampleJobs();
@@ -158,5 +172,9 @@ public class SchedulerTest {
 
     private List<Integer> mapToIds(ArrayList<List<JobTimeFrame>> scheduleTable, int index) {
         return scheduleTable.get(index).stream().map(JobTimeFrame::getJobId).collect(toList());
+    }
+
+    private int mapToCost(ArrayList<List<JobTimeFrame>> scheduleTable, int index, Map<Integer, Job> jobs) {
+        return mapToIds(scheduleTable, index).stream().mapToInt(id -> jobs.get(id).getCost()).sum();
     }
 }
