@@ -147,7 +147,6 @@ public class SchedulerTest {
             );
     }
 
-    // todo: change name
     private List<Job> getSecondExampleJobs() {
         return asList(
                 Job.builder().id(0).period(3).duration(1).cost(1).build(),

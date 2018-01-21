@@ -30,6 +30,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.function.Function.identity;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -210,6 +211,58 @@ public class ScheduleControllerTest {
         result
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @SneakyThrows
+    public void shouldReturnNextJobForRequestedScheduleAndTime() {
+        final Schedule schedule = getSchedule(getJobs());
+        final Integer id = 0;
+        final String time = "0";
+        when(scheduleRegistry.get(id)).thenReturn(schedule);
+
+        final ResultActions result = this.mockMvc.perform(
+                get(SCHEDULE_URL + "/" + id + "/next")
+                        .param("time", time)
+                        .accept(APPLICATION_JSON));
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", isIn(asList(1, 3))));
+    }
+
+    @Test
+    @SneakyThrows
+    public void shouldReturnEmptyResponseWhenThereAreNoNextJobs() {
+        final Schedule schedule = getSchedule(getJobs());
+        final Integer id = 0;
+        final String time = "5";
+        when(scheduleRegistry.get(id)).thenReturn(schedule);
+
+        final ResultActions result = this.mockMvc.perform(
+                get(SCHEDULE_URL + "/" + id + "/next")
+                        .param("time", time)
+                        .accept(APPLICATION_JSON));
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(content().json("{}"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void shouldReturnMaxCostForRequestedSchedule() {
+        final Schedule schedule = getSchedule(getJobs());
+        final Integer id = 0;
+        when(scheduleRegistry.get(id)).thenReturn(schedule);
+
+        final ResultActions result = this.mockMvc.perform(
+                get(SCHEDULE_URL + "/" + id + "/max")
+                        .accept(APPLICATION_JSON));
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", equalTo(11)));
     }
 
     private List<Job> getJobs() {

@@ -93,7 +93,7 @@ public class ScheduleController {
         return getResponseWithErrorHandling(() -> {
             final Schedule schedule = scheduleRegistry.get(scheduleId);
             final ScheduledJob nextJob = schedule.getNextJob(time).orElse(null);
-            return ResponseEntity.ok(nextJob);
+            return ResponseEntity.ok(nextJob == null ? "{}" : nextJob);
         });
     }
 
