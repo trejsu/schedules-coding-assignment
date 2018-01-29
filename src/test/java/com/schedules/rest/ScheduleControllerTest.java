@@ -1,8 +1,8 @@
 package com.schedules.rest;
 
 
-import com.schedules.csv.CsvLoader;
-import com.schedules.exception.InputNotFoundException;
+import com.schedules.csv.CsvParser;
+import com.schedules.exception.CsvMalformedException;
 import com.schedules.exception.ScheduleNotFoundException;
 import com.schedules.model.Job;
 import com.schedules.model.JobTimeFrame;
@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -24,11 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.schedules.model.JobTimeFrame.next;
+import static com.schedules.model.JobTimeFrame.start;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.function.Function.identity;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -40,7 +42,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
-@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @WebMvcTest(ScheduleController.class)
 public class ScheduleControllerTest {
@@ -54,7 +55,7 @@ public class ScheduleControllerTest {
     private Scheduler scheduler;
 
     @MockBean
-    private CsvLoader csvLoader;
+    private CsvParser csvParser;
 
     @MockBean
     private ScheduleRegistry scheduleRegistry;
@@ -62,18 +63,18 @@ public class ScheduleControllerTest {
     @Test
     @SneakyThrows
     public void shouldReturnLocationOfCreatedSchedule() {
-        final String filename = "input.csv";
+        final String csv = getCsv();
         final List<Job> jobs = getJobs();
         final Schedule schedule = getSchedule(jobs);
         final Integer id = 0;
-        when(csvLoader.loadAsJobs(filename)).thenReturn(jobs);
+        when(csvParser.parseString(csv)).thenReturn(jobs);
         when(scheduler.createSchedule(jobs)).thenReturn(schedule);
         when(scheduleRegistry.add(schedule)).thenReturn(id);
 
         final ResultActions result = this.mockMvc.perform(
                 post(SCHEDULE_URL)
                         .contentType(TEXT_PLAIN_VALUE)
-                        .content(filename));
+                        .content(csv));
 
         result
                 .andExpect(status().isCreated())
@@ -82,20 +83,19 @@ public class ScheduleControllerTest {
 
     @Test
     @SneakyThrows
-    public void shouldReturnBadRequestWhenInputDoesNotExists() {
-        final String filename = "input.csv";
-        final String errorMessage = "{\"errorMessage\":\"error\"}";
-        when(csvLoader.loadAsJobs(filename))
-                .thenThrow(new InputNotFoundException(errorMessage));
+    public void shouldReturnBadRequestWhenCsvParserThrowsCsvMalformedException() {
+        final String csv = getMalformedCsv();
+        final String errorMessage = "error";
+        when(csvParser.parseString(csv)).thenThrow(new CsvMalformedException(errorMessage));
 
         final ResultActions result = this.mockMvc.perform(
                 post(SCHEDULE_URL)
                         .contentType(TEXT_PLAIN_VALUE)
-                        .content(filename));
+                        .content(csv));
 
         result
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json(errorMessage));
+                .andExpect(content().json("{\"errorMessage\":\"" + errorMessage + "\"}"));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class ScheduleControllerTest {
     @SneakyThrows
     public void shouldReturnNotFoundWhenScheduleDoesNotExists() {
         final Integer id = 0;
-        final String errorMessage = "{\"errorMessage\":\"error\"}";
+        final String errorMessage = "error";
         when(scheduleRegistry.get(id))
                 .thenThrow(new ScheduleNotFoundException(errorMessage));
 
@@ -138,7 +138,7 @@ public class ScheduleControllerTest {
 
         result
                 .andExpect(status().isNotFound())
-                .andExpect(content().json(errorMessage));
+                .andExpect(content().json("{\"errorMessage\":\"" + errorMessage + "\"}"));
     }
 
     @Test
@@ -213,6 +213,58 @@ public class ScheduleControllerTest {
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
+    @Test
+    @SneakyThrows
+    public void shouldReturnNextJobForRequestedScheduleAndTime() {
+        final Schedule schedule = getSchedule(getJobs());
+        final Integer id = 0;
+        final String time = "0";
+        when(scheduleRegistry.get(id)).thenReturn(schedule);
+
+        final ResultActions result = this.mockMvc.perform(
+                get(SCHEDULE_URL + "/" + id + "/next")
+                        .param("time", time)
+                        .accept(APPLICATION_JSON));
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", isIn(asList(1, 3))));
+    }
+
+    @Test
+    @SneakyThrows
+    public void shouldReturnEmptyResponseWhenThereAreNoNextJobs() {
+        final Schedule schedule = getSchedule(getJobs());
+        final Integer id = 0;
+        final String time = "5";
+        when(scheduleRegistry.get(id)).thenReturn(schedule);
+
+        final ResultActions result = this.mockMvc.perform(
+                get(SCHEDULE_URL + "/" + id + "/next")
+                        .param("time", time)
+                        .accept(APPLICATION_JSON));
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(content().json("{}"));
+    }
+
+    @Test
+    @SneakyThrows
+    public void shouldReturnMaxCostForRequestedSchedule() {
+        final Schedule schedule = getSchedule(getJobs());
+        final Integer id = 0;
+        when(scheduleRegistry.get(id)).thenReturn(schedule);
+
+        final ResultActions result = this.mockMvc.perform(
+                get(SCHEDULE_URL + "/" + id + "/max")
+                        .accept(APPLICATION_JSON));
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", equalTo(11)));
+    }
+
     private List<Job> getJobs() {
         return asList(
                 Job.builder().id(0).period(10).duration(4).cost(2).build(),
@@ -224,19 +276,35 @@ public class ScheduleControllerTest {
 
     private Schedule getSchedule(List<Job> jobs) {
         ArrayList<List<JobTimeFrame>> scheduleTable = new ArrayList<>();
-        scheduleTable.add(asList(new JobTimeFrame(0, true), new JobTimeFrame(1, true), new JobTimeFrame(2, true), new JobTimeFrame(3, true)));
-        scheduleTable.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, false), new JobTimeFrame(2, false)));
-        scheduleTable.add(singletonList(new JobTimeFrame(0, false)));
-        scheduleTable.add(singletonList(new JobTimeFrame(0, false)));
+        scheduleTable.add(asList(start(0), start(1), start(2), start(3)));
+        scheduleTable.add(asList(next(0), next(1), next(2)));
+        scheduleTable.add(singletonList(next(0)));
+        scheduleTable.add(singletonList(next(0)));
         scheduleTable.add(emptyList());
-        scheduleTable.add(asList(new JobTimeFrame(1, true), new JobTimeFrame(3, true)));
-        scheduleTable.add(singletonList(new JobTimeFrame(1, false)));
+        scheduleTable.add(asList(start(1), start(3)));
+        scheduleTable.add(singletonList(next(1)));
         scheduleTable.add(emptyList());
         scheduleTable.add(emptyList());
         scheduleTable.add(emptyList());
 
         final Map<Integer, Job> jobsWithIds = jobs.stream().collect(Collectors.toMap(Job::getId, identity()));
 
-        return new Schedule(scheduleTable, jobsWithIds);
+        final int [] costs = {11, 7, 2, 2, 0, 7, 3, 0, 0, 0};
+
+        return new Schedule(scheduleTable, jobsWithIds, costs);
+    }
+
+    private String getCsv() {
+        return "0, 10, 4, 2\n" +
+               "1, 5, 2, 3\n" +
+               "2, 10, 2, 2\n" +
+               "3, 5, 1, 4";
+    }
+
+    private String getMalformedCsv() {
+        return "0, ten, 4\n" +
+                "1, 5, 2, 3\n" +
+                "2, 10, 2, 2\n" +
+                "3, 5, 1, 4";
     }
 }

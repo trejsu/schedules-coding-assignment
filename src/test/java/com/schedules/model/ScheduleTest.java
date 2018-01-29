@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.schedules.model.JobTimeFrame.next;
+import static com.schedules.model.JobTimeFrame.start;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -124,20 +126,22 @@ public class ScheduleTest {
         );
 
         ArrayList<List<JobTimeFrame>> scheduleTable = new ArrayList<>();
-        scheduleTable.add(asList(new JobTimeFrame(0, true), new JobTimeFrame(3, true)));
-        scheduleTable.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, true)));
-        scheduleTable.add(asList(new JobTimeFrame(0, false), new JobTimeFrame(1, false)));
-        scheduleTable.add(singletonList(new JobTimeFrame(0, false)));
+        scheduleTable.add(asList(start(0), start(3)));
+        scheduleTable.add(asList(next(0), start(1)));
+        scheduleTable.add(asList(next(0), next(1)));
+        scheduleTable.add(singletonList(next(0)));
         scheduleTable.add(emptyList());
-        scheduleTable.add(singletonList(new JobTimeFrame(3, true)));
-        scheduleTable.add(singletonList(new JobTimeFrame(1, true)));
-        scheduleTable.add(singletonList(new JobTimeFrame(1, false)));
-        scheduleTable.add(singletonList(new JobTimeFrame(2, true)));
-        scheduleTable.add(singletonList(new JobTimeFrame(2, false)));
+        scheduleTable.add(singletonList(start(3)));
+        scheduleTable.add(singletonList(start(1)));
+        scheduleTable.add(singletonList(next(1)));
+        scheduleTable.add(singletonList(start(2)));
+        scheduleTable.add(singletonList(next(2)));
 
         final Map<Integer, Job> jobsWithIds = jobs.stream().collect(Collectors.toMap(Job::getId, identity()));
 
-        return new Schedule(scheduleTable, jobsWithIds);
+        final int [] costs = {6, 5, 5, 2, 0, 4, 3, 3, 2, 2};
+
+        return new Schedule(scheduleTable, jobsWithIds, costs);
     }
 }
 
